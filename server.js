@@ -13,6 +13,7 @@ var gm = require('gm')
 	, port = process.env.PORT || argv.port || 5556
 	, root = process.env.IMAGE_SERVE_ROOT || argv.root
 	, cache = process.env.IMAGE_SERVE_CACHE || argv.cache
+	, mount = process.env.IMAGE_SERVE_MOUNT || argv.mount || '/image'
 	, maxWidth = process.env.IMAGE_SERVE_MAX_WIDTH || argv.maxWidth || 3000
 	, maxHeight = process.env.IMAGE_SERVE_MAX_HEIGHT || argv.maxHeight || 3000
 	;
@@ -31,7 +32,7 @@ root = resolve(root);
 cache = resolve(cache);
 
 //handle a route that will do a glob search and retrieve matching available images
-server.get('/image/:name/list.json', function (req, res, next) {
+server.get(mount + '/:name/list.json', function (req, res, next) {
 	//do a glob search for files for this name
 	var path = join(root, req.params.name + '*.jpg');
 
@@ -45,11 +46,10 @@ server.get('/image/:name/list.json', function (req, res, next) {
 });
 
 //hanlde a route for name-widthxheight.format
-server.get('/image/:name-:width(\\d+)x:height(\\d+).:format', renderImage);
+server.get(mount + '/:name-:width(\\d+)x:height(\\d+).:format', renderImage);
 
 //handle a route for full sized image
-server.get('/image/:name.:format', renderImage); 
-
+server.get(mount + '/:name.:format', renderImage); 
 
 //This function will serve a cached image or render the new image, save it and send it
 function renderImage (req, res, next) {
