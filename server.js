@@ -53,21 +53,31 @@ server.get(mount + '/:name.:format', renderImage);
 
 //This function will serve a cached image or render the new image, save it and send it
 function renderImage (req, res, next) {
-	var path = join(root, req.params.name + '.jpg');
+	var path = join(root, req.params.name + '.jpg')
+		, name, cached
+		;
 
 	//limit max width/height
 	req.params.width = Math.min(maxWidth, req.params.width);
 	req.params.height = Math.min(maxHeight, req.params.height);
 
-	var name = req.params.name + '-' + req.params.width + 'x' + req.params.height + '.' + req.params.format;
-	var cached = join(cache, name);
-	var crs = send(req, cached);
+	fs.stat(path, function (err, stat) {
+		if (err) {
+			return next(err);
+		}
 
-	crs.on('error', function (err) {
-		readFresh();
+		name = req.params.name + '-' + stat.mtime.getTime() + '-' + req.params.width + 'x' + req.params.height + '.' + req.params.format;
+		cached = join(cache, name);
+
+		var crs = send(req, cached);
+
+		crs.on('error', function (err) {
+			readFresh();
+		});
+
+		crs.pipe(res);
 	});
 
-	crs.pipe(res);
 
 	function readFresh() {
 		var rs = fs.createReadStream(path);
