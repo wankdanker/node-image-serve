@@ -48,11 +48,6 @@ server.get('/image/:name.:format', renderImage);
 function renderImage (req, res, next) {
 	var path = join(root, req.params.name + '.jpg');
 
-	//if no width/height and format is jpg then just send the full file
-	if (!req.params.width && !req.params.height && req.params.format === 'jpg') {
-		return send(req, path).on('error', next).pipe(res);
-	}
-
 	//limit max width/height
 	req.params.width = Math.min(maxWidth, req.params.width);
 	req.params.height = Math.min(maxHeight, req.params.height);
