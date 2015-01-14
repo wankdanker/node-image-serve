@@ -16,6 +16,7 @@ var gm = require('gm')
 	, mount = process.env.IMAGE_SERVE_MOUNT || argv.mount || '/image'
 	, maxWidth = process.env.IMAGE_SERVE_MAX_WIDTH || argv.maxWidth || 3000
 	, maxHeight = process.env.IMAGE_SERVE_MAX_HEIGHT || argv.maxHeight || 3000
+	, maxAge = process.env.IMAGE_SERVE_MAX_AGE || argv.maxAge
 	;
 
 if (!root) {
@@ -69,7 +70,7 @@ function renderImage (req, res, next) {
 		name = req.params.name + '-' + stat.mtime.getTime() + '-' + req.params.width + 'x' + req.params.height + '.' + req.params.format;
 		cached = join(cache, name);
 
-		var crs = send(req, cached);
+		var crs = send(req, cached, { maxAge : maxAge });
 
 		crs.on('error', function (err) {
 			readFresh();
@@ -98,7 +99,7 @@ function renderImage (req, res, next) {
 					return next(err);
 				}
 
-				var rs = send(req, cached);
+				var rs = send(req, cached, { maxAge : maxAge });
 
 				rs.on('error', next);
 
