@@ -1,6 +1,6 @@
 {
   "name": "image-serve",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Serve images from a directory, mangle them with gm and cache them",
   "main": "server.js",
   "bin": {
