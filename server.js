@@ -10,6 +10,7 @@ var gm = require('gm')
 	, useyHttp = require('usey-http')
 	, server = useyHttp()
 	, glob = require('glob')
+	, Imagemin = require('imagemin')
 	, port = process.env.PORT || argv.port || 5556
 	, root = process.env.IMAGE_SERVE_ROOT || argv.root
 	, cache = process.env.IMAGE_SERVE_CACHE || argv.cache
@@ -46,7 +47,7 @@ server.get(mount + '/:name/list.json', function (req, res, next) {
 	});
 });
 
-//hanlde a route for name-widthxheight.format
+//handle a route for name-widthxheight.format
 server.get(mount + '/:name-:width(\\d+)x:height(\\d+).:format', renderImage);
 
 //handle a route for full sized image
@@ -94,16 +95,25 @@ function renderImage (req, res, next) {
 				g.resize(req.params.width, req.params.height);
 			}
 
-			g.write(cached, function (err) {
+			return g.write(cached, function (err) {
 				if (err) {
 					return next(err);
 				}
 
-				var rs = send(req, cached, { maxAge : maxAge });
+				(new Imagemin())
+					.src(cached)
+					.dest(cache)
+					.run(function (err, files, stream) {
+						if (err) {
+							return next(err);
+						}
 
-				rs.on('error', next);
+						var rs = send(req, cached, { maxAge : maxAge });
 
-				rs.pipe(res);
+						rs.on('error', next);
+
+						rs.pipe(res);
+					});
 			});
 		});
 	};
