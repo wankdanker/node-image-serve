@@ -1,16 +1,15 @@
 #!/usr/bin/env node
 
-var gm = require('gm')
-	, fs = require('fs')
+var fs = require('fs')
 	, join = require('path').join
 	, basename = require('path').basename
 	, resolve = require('path').resolve
-	, send = require('send')
 	, argv = require('optimist').argv
 	, useyHttp = require('usey-http')
 	, server = useyHttp()
 	, glob = require('glob')
-	, Imagemin = require('imagemin')
+	, rs = require('render-sender')
+	, debug = require('debug')('image-server')
 	, port = process.env.PORT || argv.port || 5556
 	, root = process.env.IMAGE_SERVE_ROOT || argv.root
 	, cache = process.env.IMAGE_SERVE_CACHE || argv.cache
@@ -18,6 +17,8 @@ var gm = require('gm')
 	, maxWidth = process.env.IMAGE_SERVE_MAX_WIDTH || argv.maxWidth || 3000
 	, maxHeight = process.env.IMAGE_SERVE_MAX_HEIGHT || argv.maxHeight || 3000
 	, maxAge = process.env.IMAGE_SERVE_MAX_AGE || argv.maxAge
+	, trim = process.env.IMAGE_SERVE_TRIM || argv.trim
+	, minify = process.env.IMAGE_SERVE_MINIFY || argv.minify
 	;
 
 if (!root) {
@@ -33,6 +34,16 @@ if (!cache) {
 root = resolve(root);
 cache = resolve(cache);
 
+var irs = rs({
+	maxAge : maxAge
+	, cache : cache
+});
+
+server.use(function (req, res, next) {
+	debug(req.url);
+	return next();
+})
+
 //handle a route that will do a glob search and retrieve matching available images
 server.get(mount + '/:name/list.json', function (req, res, next) {
 	//do a glob search for files for this name
@@ -47,83 +58,134 @@ server.get(mount + '/:name/list.json', function (req, res, next) {
 	});
 });
 
-//handle a route for name-widthxheight.format
-server.get(mount + '/:name-:width(\\d+)x:height(\\d+).:format', renderImage);
+//handle the image route. options are parsed from the name of the file while
+//still preserving the actual file name or at least trying to.
+server.get(mount + '/:name', renderImage);
 
-//handle a route for full sized image
-server.get(mount + '/:name.:format', renderImage); 
-
-//This function will serve a cached image or render the new image, save it and send it
-function renderImage (req, res, next) {
-	var path = join(root, req.params.name + '.jpg')
-		, name, cached
-		;
-
-	//limit max width/height
-	req.params.width = Math.min(maxWidth, req.params.width);
-	req.params.height = Math.min(maxHeight, req.params.height);
-
-	fs.stat(path, function (err, stat) {
-		if (err) {
-			return next(err);
-		}
-
-		name = req.params.name + '-' + stat.mtime.getTime() + '-' + req.params.width + 'x' + req.params.height + '.' + req.params.format;
-		cached = join(cache, name);
-
-		var crs = send(req, cached, { maxAge : maxAge });
-
-		crs.on('error', function (err) {
-			readFresh();
-		});
-
-		crs.pipe(res);
-	});
-
-
-	function readFresh() {
-		var rs = fs.createReadStream(path);
-
-		rs.once('error', next);
-
-		rs.once('readable', function () {
-			var g = gm(rs, name)
-				.options({ imageMagick : true })
-				.trim()
-
-			if (req.params.width && req.params.height) { 
-				g.resize(req.params.width, req.params.height);
-			}
-
-			return g.write(cached, function (err) {
-				if (err) {
-					return next(err);
-				}
-
-				(new Imagemin())
-					.src(cached)
-					.dest(cache)
-					.run(function (err, files, stream) {
-						if (err) {
-							return next(err);
-						}
-
-						var rs = send(req, cached, { maxAge : maxAge });
-
-						rs.on('error', next);
-
-						rs.pipe(res);
-					});
-			});
-		});
-	};
-};
-
+//a terrible default 404 handler
 server.use(useyHttp._404({ message : 'Image Not Found' }));
 
-server.use('error', function (err, req, res) {
+//dump the stack and end when an error is caught
+server.use('error', function (err, req, res, next) {
+	if (err.code === 'ENOENT') {
+		useyHttp._404({ message : 'Image Not Found' })(req, res);
+	};
+
 	res.end(err.stack);
 });
 
+//listen!
 server.listen(port);
+
+//say what port we're listing on, errrrr, on which port we are listening.
 console.log('listening on port %s', port);
+
+//This function will serve a cached image or render the new image, save it and send it
+function renderImage (req, res, next) {
+	var opts = new ParsedName(req.params.name);
+
+	opts.path = join(root, opts.name);
+
+	//limit max width/height
+	opts.width = Math.min(maxWidth, opts.width);
+	opts.height = Math.min(maxHeight, opts.height);
+
+	opts.trim = (opts.trim != null) ? opts.trim : trim;
+	opts.minify = (opts.minify != null) ? opts.minify : minify;
+
+	debug(opts);
+
+	opts.req = req;
+	opts.res = res;
+
+	irs(opts, function (err) {
+		if (err) {
+			debug(err)
+			return next(err);
+		}
+	});
+};
+
+ParsedName.OPTIONS = {
+	dimensions :  /-(([0-9]+)x([0-9]+))/
+	, crop : /-(cropped|crop):([0-9]+)x([0-9]+)~([0-9]+),([0-9]+)/
+	, trim : /-trimmed|-trim/
+	, minify : /-minify|-minified/
+	, format : /\.([a-zA-Z]+)$/
+};
+
+function ParsedName (name) {
+	var fileName = [];
+	var foundOptions = false;
+
+	name.split(/-/gi).forEach(function (token, i, a) {
+		debug(token)
+		if (foundOptions) {
+			return;
+		}
+
+		//see if this token matches any of the options that we will parse
+		var matchedOpts = Object.keys(ParsedName.OPTIONS).filter(function (key) {
+			if (key === 'format') {
+				return false;
+			}
+			return ParsedName.OPTIONS[key].test('-' + token);
+		});
+
+		if (matchedOpts.length) {
+			foundOptions = true;
+
+			return;
+		}
+
+		if (i == a.length - 1) {
+			fileName.push(token.split('.')[0]);
+		}
+		else {
+			fileName.push(token);
+		}
+	});
+
+	var dimensions = ParsedName.OPTIONS.dimensions.exec(name);
+	var crop = ParsedName.OPTIONS.crop.exec(name);
+
+	this.format = (ParsedName.OPTIONS.format.exec(name) || "")[1] || null;
+	this.name = fileName.join('-') + '.' + (this.format || 'jpg');
+
+	this.trim = ParsedName.OPTIONS.trim.test(name)
+		? true
+		: /-nominify|-notminified/.test(name)
+		? false
+		: null
+		;
+
+	this.minify = ParsedName.OPTIONS.minify.test(name)
+		? true
+		: /-nominify|-notminified/.test(name)
+		? false
+		: null
+		;
+
+	if (dimensions) {
+		this.dimensions = dimensions[1];
+		this.width = dimensions[2];
+		this.height = dimensions[3];
+	}
+	else {
+		this.dimensions = null;
+		this.width = null;
+		this.height = null;
+	}
+
+	if (crop) {
+		this.crop = {
+			width : crop[2]
+			, height : crop[3]
+			, x : crop[4]
+			, y : crop[5]
+		};
+	}
+	else {
+		this.crop = null;
+	}
+}
