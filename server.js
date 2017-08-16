@@ -112,6 +112,7 @@ ParsedName.OPTIONS = {
 	, trim : /-trimmed|-trim/
 	, minify : /-minify|-minified/
 	, format : /\.([a-zA-Z]+)$/
+	, sourceFormat : /\.([a-zA-Z]+)\.[a-zA-Z]+$/
 };
 
 function ParsedName (name) {
@@ -126,7 +127,7 @@ function ParsedName (name) {
 
 		//see if this token matches any of the options that we will parse
 		var matchedOpts = Object.keys(ParsedName.OPTIONS).filter(function (key) {
-			if (key === 'format') {
+			if (key === 'format' || key === 'sourceFormat') {
 				return false;
 			}
 			return ParsedName.OPTIONS[key].test('-' + token);
@@ -149,8 +150,9 @@ function ParsedName (name) {
 	var dimensions = ParsedName.OPTIONS.dimensions.exec(name);
 	var crop = ParsedName.OPTIONS.crop.exec(name);
 
+	this.sourceFormat = (ParsedName.OPTIONS.sourceFormat.exec(name) || "")[1] || null;
 	this.format = (ParsedName.OPTIONS.format.exec(name) || "")[1] || null;
-	this.name = fileName.join('-') + '.' + (this.format || 'jpg');
+	this.name = fileName.join('-') + '.' + (this.sourceFormat || this.format || 'jpg');
 
 	this.trim = ParsedName.OPTIONS.trim.test(name)
 		? true
