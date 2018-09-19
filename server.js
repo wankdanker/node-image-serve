@@ -110,7 +110,9 @@ ParsedName.OPTIONS = {
 	dimensions :  /-(([0-9]+)x([0-9]+))/
 	, crop : /-(cropped|crop):([0-9]+)x([0-9]+)~([0-9]+),([0-9]+)/
 	, trim : /-trimmed|-trim/
+	, notrim : /-notrim|-nottrimmed/
 	, minify : /-minify|-minified/
+	, nominify : /-nominify|-notminified/
 	, format : /\.([a-zA-Z]+)$/
 	, sourceFormat : /\.([a-zA-Z]+)\.[a-zA-Z]+$/
 };
@@ -156,14 +158,14 @@ function ParsedName (name) {
 
 	this.trim = ParsedName.OPTIONS.trim.test(name)
 		? true
-		: /-nominify|-notminified/.test(name)
+		: ParsedName.OPTIONS.notrim.test(name)
 		? false
 		: null
 		;
 
 	this.minify = ParsedName.OPTIONS.minify.test(name)
 		? true
-		: /-nominify|-notminified/.test(name)
+		: ParsedName.OPTIONS.nominify.test(name)
 		? false
 		: null
 		;
