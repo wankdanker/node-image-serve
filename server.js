@@ -19,6 +19,10 @@ var fs = require('fs')
 	, maxAge = process.env.IMAGE_SERVE_MAX_AGE || argv.maxAge
 	, trim = process.env.IMAGE_SERVE_TRIM || argv.trim
 	, minify = process.env.IMAGE_SERVE_MINIFY || argv.minify
+	, aspectRatio = process.env.IMG_SERVER_ASPECT_RATIO || argv.aspectRatio
+	, bitRate = proces.env.BIT_RATE || argv.bitRate
+	, frameRate = proces.env.FRAME_RATE || argv.frameRate
+	, frame = process.env.FRAME || argv.frame
 	;
 
 if (!root) {
@@ -93,6 +97,13 @@ function renderImage (req, res, next) {
 	opts.trim = (opts.trim != null) ? opts.trim : trim;
 	opts.minify = (opts.minify != null) ? opts.minify : minify;
 
+	//Video opts.
+
+	opts.aspectRatio = (opts.aspectRatio != null) ? opts.aspectRatio : aspectRatio;
+	opts.bitRate = (opts.bitRate != null) ? opts.bitRate : bitRate;
+	opts.frameRate = (opts.frameRate != null) ? opts.frameRate : frameRate;
+	opts.frame = (opts.frame != null) ? opts.frame : frame;
+
 	debug(opts);
 
 	opts.req = req;
@@ -115,6 +126,10 @@ ParsedName.OPTIONS = {
 	, nominify : /-nominify|-notminified/
 	, format : /\.([a-zA-Z]+)$/
 	, sourceFormat : /\.([a-zA-Z]+)\.[a-zA-Z]+$/
+	, aspectRatio: /-aspectRatio|-aspectRatio/
+	, bitRate : /-bitRate|-bitRate/
+	, frameRate : /-bitRate|-bitRate/
+	, frame : /-frame|-frame/
 };
 
 function ParsedName (name) {
@@ -154,7 +169,12 @@ function ParsedName (name) {
 
 	this.sourceFormat = (ParsedName.OPTIONS.sourceFormat.exec(name) || "")[1] || null;
 	this.format = (ParsedName.OPTIONS.format.exec(name) || "")[1] || null;
-	this.name = fileName.join('-') + '.' + (this.sourceFormat || this.format || 'jpg');
+	this.name = fileName.join('-') + '.' + (this.sourceFormat || this.format);
+
+	this.aspectRatio = (ParsedName.OPTIONS.aspectRatio.exec(name) || "")[1] || null;
+	this.bitRate = (ParsedName.OPTIONS.bitRate.exec(name) || "")[1] || null;
+	this.frameRate = (ParsedName.OPTIONS.frameRate.exec(name) || "")[1] || null;
+	this.frame = (ParsedName.OPTIONS.frame.exec(name) || "")[1] || null;
 
 	this.trim = ParsedName.OPTIONS.trim.test(name)
 		? true
