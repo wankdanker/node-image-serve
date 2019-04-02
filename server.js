@@ -22,7 +22,7 @@ var fs = require('fs')
 	, aspectRatio = process.env.IMG_SERVER_ASPECT_RATIO || argv.aspectRatio
 	, bitRate = proces.env.BIT_RATE || argv.bitRate
 	, frameRate = proces.env.FRAME_RATE || argv.frameRate
-	, frame = process.env.FRAME || argv.frame
+	, timeStamp = process.env.TIMESTAMP || argv.timestamp
 	;
 
 if (!root) {
@@ -129,7 +129,7 @@ ParsedName.OPTIONS = {
 	, aspectRatio: /-aspectRatio|-aspectRatio/
 	, bitRate : /-bitRate|-bitRate/
 	, frameRate : /-bitRate|-bitRate/
-	, frame : /-frame|-frame/
+	, timestamp : /-timestamp|-timestamp/
 };
 
 function ParsedName (name) {
@@ -174,7 +174,7 @@ function ParsedName (name) {
 	this.aspectRatio = (ParsedName.OPTIONS.aspectRatio.exec(name) || "")[1] || null;
 	this.bitRate = (ParsedName.OPTIONS.bitRate.exec(name) || "")[1] || null;
 	this.frameRate = (ParsedName.OPTIONS.frameRate.exec(name) || "")[1] || null;
-	this.frame = (ParsedName.OPTIONS.frame.exec(name) || "")[1] || null;
+	this.timestamp = (ParsedName.OPTIONS.timestamp.exec(name) || "")[1] || null;
 
 	this.trim = ParsedName.OPTIONS.trim.test(name)
 		? true
