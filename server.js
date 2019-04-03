@@ -20,8 +20,8 @@ var fs = require('fs')
 	, trim = process.env.IMAGE_SERVE_TRIM || argv.trim
 	, minify = process.env.IMAGE_SERVE_MINIFY || argv.minify
 	, aspectRatio = process.env.IMG_SERVER_ASPECT_RATIO || argv.aspectRatio
-	, bitRate = proces.env.BIT_RATE || argv.bitRate
-	, frameRate = proces.env.FRAME_RATE || argv.frameRate
+	, bitRate = process.env.BIT_RATE || argv.bitRate
+	, frameRate = process.env.FRAME_RATE || argv.frameRate
 	, timeStamp = process.env.TIMESTAMP || argv.timestamp
 	;
 
@@ -102,7 +102,6 @@ function renderImage (req, res, next) {
 	opts.aspectRatio = (opts.aspectRatio != null) ? opts.aspectRatio : aspectRatio;
 	opts.bitRate = (opts.bitRate != null) ? opts.bitRate : bitRate;
 	opts.frameRate = (opts.frameRate != null) ? opts.frameRate : frameRate;
-	opts.frame = (opts.frame != null) ? opts.frame : frame;
 
 	debug(opts);
 
