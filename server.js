@@ -19,10 +19,14 @@ var fs = require('fs'),
 	maxAge = process.env.IMAGE_SERVE_MAX_AGE || argv.maxAge,
 	trim = process.env.IMAGE_SERVE_TRIM || argv.trim,
 	minify = process.env.IMAGE_SERVE_MINIFY || argv.minify,
-	aspect_ratio = process.env.IMG_SERVER_ASPECT_RATIO || argv.aspect_ratio,
+	//TODO: Fix apsect ratio and timestamp.
+	//aspect_ratio = process.env.IMG_SERVER_ASPECT_RATIO || argv.aspect_ratio,
 	bitrate = process.env.BIT_RATE || argv.bitrate,
-	framerate = process.env.FRAME_RATE || argv.framerate,
-	timestamp = process.env.TIMESTAMP || argv.timestamp;
+	framerate = process.env.FRAME_RATE || argv.framerate;
+	// timestamp = process.env.TIMESTAMP || argv.timestamp,
+	// width = process.env.WIDTH || argv.width,
+	// height = process.env.HEIGHT || argv.height;
+
 
 if (!root) {
 	console.error('--root is required to run');
@@ -102,17 +106,18 @@ function renderImage(req, res, next) {
 
 	//Video opts.
 
-	opts.aspect_ratio = (opts.aspect_ratio != null) ? opts.aspect_ratio : aspect_ratio;
+	//TODO: Fix apsect ratio and timestamp.
+	//opts.aspect_ratio = (opts.aspect_ratio != null) ? opts.aspect_ratio : aspect_ratio;
 	opts.bitrate = (opts.bitrate != null) ? opts.bitrate : bitrate;
 	opts.framerate = (opts.framerate != null) ? opts.framerate : framerate;
-	opts.timestamp = (opts.timestamp != null) ? opts.timestamp : timestamp;
+	// opts.timestamp = (opts.timestamp != null) ? opts.timestamp : timestamp;
+	// opts.width = (opts.width != null) ? opts.width : width;
+	// opts.height = (opts.height != null) ? opts.height : height;
 
 	debug(opts);
 
 	opts.req = req;
 	opts.res = res;
-
-	console.log("\n" + opts.path + "\n");
 
 	irs(opts, function (err) {
 		if (err) {
@@ -132,9 +137,13 @@ ParsedName.OPTIONS = {
 	format: /\.([a-zA-Z0-9]+)$/,
 	sourceFormat: /\.([a-zA-Z0-9]+)\.[a-zA-Z0-9]+$/,
 	bitrate: /-bitrate:([0-9]{1,4})/,
-	framerate: /-framerate:([0-9]{1,3})/,
-	timestamp: /-timestamp:([0-9\.]{1,9})/,
-	apsect_ratio: /-aspect_ratio:([([0-9:])])/
+	framerate: /-framerate:([0-9]{1,3})/
+
+	//TODO: Fix apsect ratio and timestamp.
+	// timestamp: /-timestamp:([0-9]{1,9})/,
+	// apsect_ratio: /-aspect_ratio:([0-9][0-9]x)/,
+	// height: /-height:([0-9]){1,4}/,
+	// width: /-width:([0-9]{1,4})/
 };
 
 function ParsedName(name) {
@@ -175,15 +184,12 @@ function ParsedName(name) {
 	this.format = (ParsedName.OPTIONS.format.exec(name) || "")[1] || null;
 	this.sourceFormat = this.sourceFormat || this.format;
 
-	console.log(this.sourceFormat);
-	console.log(this.format);
-
-
 	this.name = fileName.join('-') + '.' + (this.sourceFormat || this.format || 'mp4');
 
 	this.bitrate = (ParsedName.OPTIONS.bitrate.exec(name) || "")[1] || null;
 	this.framerate = (ParsedName.OPTIONS.framerate.exec(name) || "")[1] || null;
-	this.timestamp = (ParsedName.OPTIONS.timestamp.exec(name) || "")[1] || null;
+	//TODO: Fix apsect ratio and timestamp.
+	// this.timestamp = (ParsedName.OPTIONS.timestamp.exec(name) || "")[1] || null;
 
 	this.trim = ParsedName.OPTIONS.trim.test(name) ?
 		true :
