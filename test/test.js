@@ -153,9 +153,25 @@ test("Testing parsedName size", t => {
     const size = '200x200'
     const testFileName = 'image1-size:' + size + '.jpg';
     const opts = new parsedName(testFileName);
-    t.equal(opts.size, size, "timestamp should be equal.")
+    t.equal(opts.size, size, "size should be equal.")
 
     t.end();
 });
 
-//TODO: Write unit test with multiple options.
+test("Testing parsedName multiple attrbutes", t => {
+
+    //Testing multiple attributes.
+    const bitrate = '3000';
+    const framerate = '60';
+    const dimensions = '500x500';
+    const sourceFormat = 'mp4';
+
+    const testFileName = 'video-' + dimensions + '-framerate:' + framerate + '-bitrate:' + bitrate + '-trimmed' + '-minify' + '.' + sourceFormat;
+    const opts = new parsedName(testFileName);
+    t.equal(opts.dimensions, dimensions, "dimensions should be equal.");
+    t.equal(opts.bitrate, bitrate, "bitrate should be equal.");
+    t.equal(opts.framerate, framerate, "framerate should be equal.");
+    t.equal(opts.sourceFormat, sourceFormat, "sourceFormat should be equal.");
+
+    t.end();
+});
