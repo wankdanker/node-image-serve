@@ -7,16 +7,16 @@
     "image-serve": "server.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node test/test.js"
   },
   "author": "Dan VerWeire",
   "license": "MIT",
   "dependencies": {
     "debug": "^2.6.0",
-    "glob": "^4.3.1",
+    "glob": "^7.1.3",
     "optimist": "0.6.1",
-    "render-sender": "^1.3.2",
+    "render-sender": "^1.4.2",
     "tape": "^4.10.1",
-    "usey-http": "^0.5.0"
+    "usey-http": "^0.9.0"
   }
 }
