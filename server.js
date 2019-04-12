@@ -23,7 +23,6 @@ var fs = require('fs'),
 	bitrate = process.env.BIT_RATE || argv.bitrate,
 	framerate = process.env.FRAME_RATE || argv.framerate,
 	timestamp = process.env.TIMESTAMP || argv.timestamp,
-	size = process.env.SIZE || argv.size;
 
 
 if (!root) {
@@ -107,7 +106,6 @@ function renderImage(req, res, next) {
 	opts.bitrate = (opts.bitrate != null) ? opts.bitrate : bitrate;
 	opts.framerate = (opts.framerate != null) ? opts.framerate : framerate;
 	opts.timestamp = (opts.timestamp != null) ? opts.timestamp : timestamp;
-	opts.size = (opts.size != null) ? opts.size : size;
 
 	debug(opts);
 
