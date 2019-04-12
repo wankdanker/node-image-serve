@@ -22,7 +22,7 @@ var fs = require('fs'),
 	minify = process.env.IMAGE_SERVE_MINIFY || argv.minify,
 	bitrate = process.env.BIT_RATE || argv.bitrate,
 	framerate = process.env.FRAME_RATE || argv.framerate,
-	timestamp = process.env.TIMESTAMP || argv.timestamp,
+	timestamp = process.env.TIMESTAMP || argv.timestamp
 
 
 if (!root) {
