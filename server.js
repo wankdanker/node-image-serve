@@ -75,7 +75,7 @@ server.use(useyHttp._404({
 //dump the stack and end when an error is caught
 server.use('error', function (err, req, res, next) {
 	if (err.code === 'ENOENT') {
-		useyHttp._404({
+		return useyHttp._404({
 			message: 'Image Not Found'
 		})(req, res);
 	};
