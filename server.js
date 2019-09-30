@@ -80,7 +80,13 @@ server.use('error', function (err, req, res, next) {
 		})(req, res);
 	};
 
-	res.end(err.stack);
+	res.status(500);
+
+	res.json({
+		error : {
+			message : 'An internal error occurred while processing the image.'
+		}
+	});
 });
 
 //listen!
@@ -115,9 +121,12 @@ function renderImage(req, res, next) {
 
 	irs(opts, function (err) {
 		if (err) {
-			debug(err)
+			console.error(err);
+			
 			return next(err);
 		}
+
+		//else the reponse already was ended by render-sender
 	});
 };
 
