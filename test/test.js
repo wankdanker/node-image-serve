@@ -34,6 +34,28 @@ test("Testing parsedName crop", t => {
     t.end();
 });
 
+test("Testing parsedName crop with decimals", t => {
+    
+    const crop = {
+        width : '0.567'
+        , height: '.896'
+        , x: '0.25'
+        , y: '.35'
+    }
+
+    //Testing crop.
+    const testFileName = 'image1-crop:' + crop.width+ "x" + crop.height + '~' + crop.x + "," + crop.y + '.jpg';
+    const opts = new parsedName(testFileName);
+    t.deepEqual(opts.crop, crop, "crop should be equal.");
+
+    //Testing cropped.
+    const testFileName2 = 'image1-cropped:' + crop.width+ "x" + crop.height + '~' + crop.x + "," + crop.y + '.jpg';
+    const opts2 = new parsedName(testFileName2);
+    t.deepEqual(opts2.crop, crop, "cropped should be equal.");
+
+    t.end();
+});
+
 test("Testing parsedName trim", t => {
 
     //Testing trim.
