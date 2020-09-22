@@ -197,3 +197,14 @@ test("Testing parsedName multiple attrbutes", t => {
 
     t.end();
 });
+
+
+test("Testing parsedName square with white background", t => {
+    const opts = new parsedName('image-100x100-trim-square-background:white.jpg');
+
+    t.equal(opts.background, 'white', 'background is white');
+    t.equal(opts.trim, true, 'trim is true');
+    t.equal(opts.square, true, 'square is true');
+
+    t.end();
+});

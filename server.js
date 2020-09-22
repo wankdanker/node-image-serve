@@ -21,9 +21,12 @@ var fs = require('fs'),
 	maxAge = process.env.IMAGE_SERVE_MAX_AGE || argv.maxAge,
 	trim = process.env.IMAGE_SERVE_TRIM || argv.trim,
 	minify = process.env.IMAGE_SERVE_MINIFY || argv.minify,
-	bitrate = process.env.BIT_RATE || argv.bitrate,
-	framerate = process.env.FRAME_RATE || argv.framerate,
-	timestamp = process.env.TIMESTAMP || argv.timestamp
+	background = process.env.IMAGE_SERVE_BACKGROUND || argv.background,
+	square = process.env.IMAGE_SERVE_SQUARE || argv.square,
+	bitrate = process.env.IMAGE_SERVE_BIT_RATE || argv.bitrate,
+	framerate = process.env.IMAGE_SERVE_FRAME_RATE || argv.framerate,
+	timestamp = process.env.IMAGE_SERVE_TIMESTAMP || argv.timestamp
+
 
 
 if (!root) {
@@ -107,7 +110,9 @@ function renderImage(req, res, next) {
 
 	opts.trim = (opts.trim != null) ? opts.trim : trim;
 	opts.minify = (opts.minify != null) ? opts.minify : minify;
-
+	opts.background = (opts.background != null) ? opts.background : background;
+	opts.square = (opts.square != null) ? opts.square : square;
+	
 	//Video opts.
 
 	opts.bitrate = (opts.bitrate != null) ? opts.bitrate : bitrate;
