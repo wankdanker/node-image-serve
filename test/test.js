@@ -208,3 +208,11 @@ test("Testing parsedName square with white background", t => {
 
     t.end();
 });
+
+test("Testing parsedName sharpen", t => {
+    const opts = new parsedName('image-100x100-sharpen:5.jpg');
+
+    t.equal(opts.sharpen, '5', 'sharpen value 5');
+
+    t.end();
+});
